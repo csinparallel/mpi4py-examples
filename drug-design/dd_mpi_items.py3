@@ -1,7 +1,7 @@
 # implementation of drug design exemplar
 # python3, mpi4py, introductory
-# this version assigns each worker a slice of the list of ligands to score
-# usage on Macalester pi cluster:  python run.py dd_mpi_slices.py3 4
+# in this version, workers obtain their own ligands as needed from a work Queue
+# usage on Macalester pi cluster:  python run.py dd_mpi_items.py3 4
 
 import string
 import argparse
@@ -84,17 +84,26 @@ def main():
         maxScore = -1
         maxScoreLigands = []
 
-        n = math.ceil(len(ligands)/numProcesses) # ligands per worker
         for p in range(1, numProcesses):
-            comm.send(ligands[(p-1)*n:p*n], dest=p)
+            comm.send("ligands ready", dest=p)                        #<ready>
 
-        for p in range(1, numProcesses):
-            received = comm.recv(source=p)
-            if received[0] > maxScore:
-                maxScore = received[0]
-                maxScoreLigands = received[1]
-            elif received[0] == maxScore:
-                maxScoreLigands = maxScoreLigands + received[1]
+        activeWorkers = numProcesses - 1   # count of workers that are not done
+        while len(ligands) > 0 and activeWorkers > 0:
+            stat = MPI.Status()
+            request = comm.recv(source=MPI.ANY_SOURCE, status=stat)   #<request>
+            w = stat.Get_source()
+            if len(ligands) > 0:
+                comm.send(ligands.pop(), dest=w)                      
+            else:  # no more ligands to send
+                comm.send("", dest=w)
+                results = comm.recv(source=w)                         #<finish>
+                comm.send("DONE", dest=w)    
+                activeWorkers = activeWorkers - 1
+                if results[0] > maxScore:
+                    maxScore = results[0]
+                    maxScoreLigands = results[1]
+                elif results[0] == maxScore:
+                    maxScoreLigands = maxScoreLigands + results[1]
 
         # print results
         print('The maximum score is', maxScore)
@@ -102,15 +111,19 @@ def main():
 
     else:       # worker
     
-        ligandList = comm.recv(source=0)
+        readyMsg = comm.recv(source=0)                                #<ready>
         maxScore = -1
         maxScoreLigands = []
 
-        for lig in ligandList:
+        while True:
+            comm.send("request ligand", source=0)                     #<request>
+            lig = comm.recv(source=0)         
+            if lig == "":
+                break
+            # ligand was successfully received 
             s = score(lig, args.protein)
             if s > maxScore:
                 maxScore = s
-
                 maxScoreLigands = [lig]
                 printIf(args.verbose, "\n[{}]-->new maxScore {}".format(pid, s))
                 printIf(args.verbose, "[{}]{}, ".format(pid, lig),
@@ -119,8 +132,10 @@ def main():
                 maxScoreLigands.append(lig)
                 printIf(args.verbose, "[{}]{}, ".format(pid, lig),
                     end='', flush=True) 
-        
+
+        # no more ligands to score
         printIf(args.verbose)  # print final newline
-        comm.send([maxScore, maxScoreLigands], dest=0)
+        comm.send([maxScore, maxScoreLigands], dest=0)                #<finish>
+        doneMsg = comm.recv(source=0)
 
 main()
