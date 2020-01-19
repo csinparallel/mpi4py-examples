@@ -24,7 +24,7 @@ def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("numTreesPerRow", help="number of trees in row of square grid")
     parser.add_argument("probabilityOfSpread", help="probability threshold of fire spreading from one burning tree to a non-burning tree next to it (percent between 0 and 1)")
-    # TODO: add optional arguments for i, j position of starting tree
+    # could add: optional arguments for i, j position of starting tree
     args = parser.parse_args()
 
     row_size = int(args.numTreesPerRow)
