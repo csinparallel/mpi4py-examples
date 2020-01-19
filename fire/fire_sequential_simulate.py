@@ -115,6 +115,7 @@ def main():
     upper_title = upper_title.format(num_trials, row_size, total_time)
 
     fig, (ax1, ax2) = plt.subplots(1, 2)  # 2 plots side by side
+    fig.canvas.set_window_title("Forest Fire Simulation with Multiple Trials (1 process)")
     fig.suptitle(upper_title)
 
     ax1.plot(percent_burned_data[:,0], percent_burned_data[:,1])

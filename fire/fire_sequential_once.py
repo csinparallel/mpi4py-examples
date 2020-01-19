@@ -53,7 +53,13 @@ def main():
     percent_burned = get_percent_burned(forest, row_size)
     print("Iterations until fire burns out: {}".format(iter))
     print("Percent burned: {}".format(percent_burned))
-    print_forest(forest)
+    # print_forest(forest)
+
+    plt.figure("Single Forest Fire Simulation")
+    plt.pcolor(forest, cmap=plt.cm.get_cmap('Greens', 2))
+    plt.title("{0}x{0} grid of trees, Probability {3:3.2f}\nIterations until fire burns out: {1} Percent burned: {2}\nGreen squares are live trees after one simulation".format(row_size, iter, percent_burned, prob_spread))
+
+    plt.show()
 
 
 ########## Run the main function

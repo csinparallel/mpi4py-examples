@@ -1,9 +1,10 @@
 import numpy as np
 
-UNBURNT = 0
-SMOLDERING = 1
-BURNING = 2
-BURNT = 3
+UNBURNT = 1
+BURNT = 0
+SMOLDERING = 2
+BURNING = 3
+
 
 
 def initialize_forest(size):
