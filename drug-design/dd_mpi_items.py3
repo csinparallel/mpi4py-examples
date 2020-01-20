@@ -13,36 +13,7 @@ DFLT_maxLigand = 5
 DFLT_nLigands = 120
 DFLT_protein = "the cat in the hat wore the hat to the cat hat party"
 
-# function makeLigand
-#   1 argument:  maximum length of a ligand
-#   return:  a random ligand string of random length between 1 and arg1
-
-def makeLigand(maxLength):
-    len = random.randint(1, maxLength)
-    ligand = ""
-    for c in range(len):
-        ligand = ligand + string.ascii_lowercase[random.randint(0,25)]
-    return ligand
-
-# function score
-#   2 arguments:  a ligand and a protein sequence
-#   return:  int, simulated binding score for ligand arg1 against protein arg2
-
-def score(lig, pro):
-    if len(lig) == 0 or len(pro) == 0:
-        return 0
-    if lig[0] == pro[0]:
-        return 1 + score(lig[1:], pro[1:])
-    else:
-        return max(score(lig[1:], pro), score(lig, pro[1:]))
-
-# function printIf - used for verbose output
-#   variable number of arguments:  a boolean, then valid arguments for print
-#   state change:  if arg1 is True, call print with the remaining arguments
-
-def printIf(cond, *positionals, **keywords):
-    if cond:
-        print(*positionals, **keywords)
+from dd_functions import *
 
 # main program
 
@@ -74,7 +45,7 @@ def main():
 
     # assert - numProcesses > 1
     if id == 0:    # master
-   
+
         # generate ligands
         ligands = []
         for l in range(args.nLigands):
@@ -93,12 +64,12 @@ def main():
             request = comm.recv(source=MPI.ANY_SOURCE, status=stat)   #<request>
             w = stat.Get_source()
 
-            if len(ligands) > 0:  
-                comm.send(ligands.pop(), dest=w)                      
+            if len(ligands) > 0:
+                comm.send(ligands.pop(), dest=w)
             else:  # no more ligands to send, so receive worker results
                 comm.send("", dest=w)
                 results = comm.recv(source=w)                         #<finish>
-                comm.send("DONE", dest=w)    
+                comm.send("DONE", dest=w)
                 activeWorkers = activeWorkers - 1
                 if results[0] > maxScore:
                     maxScore = results[0]
@@ -111,28 +82,28 @@ def main():
         print('Achieved by ligand(s)', maxScoreLigands)
 
     else:       # worker
-    
+
         readyMsg = comm.recv(source=0)                                #<ready>
         maxScore = -1
         maxScoreLigands = []
 
         while True:
             comm.send("request ligand", dest=0)                       #<request>
-            lig = comm.recv(source=0)         
+            lig = comm.recv(source=0)
             if lig == "":
                 break
-            # ligand was successfully received 
+            # ligand was successfully received
             s = score(lig, args.protein)
             if s > maxScore:
                 maxScore = s
                 maxScoreLigands = [lig]
                 printIf(args.verbose, "\n[{}]-->new maxScore {}".format(id, s))
                 printIf(args.verbose, "[{}]{}, ".format(id, lig),
-                        end='', flush=True) 
+                        end='', flush=True)
             elif s == maxScore:
                 maxScoreLigands.append(lig)
                 printIf(args.verbose, "[{}]{}, ".format(id, lig),
-                    end='', flush=True) 
+                    end='', flush=True)
 
         # no more ligands to score
         printIf(args.verbose)  # print final newline
