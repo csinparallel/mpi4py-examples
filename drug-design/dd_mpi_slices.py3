@@ -112,12 +112,12 @@ def main():
                 maxScore = s
 
                 maxScoreLigands = [lig]
-                printIf(args.verbose, "\n[{}]-->new maxScore {}".format(pid, s))
-                printIf(args.verbose, "[{}]{}, ".format(pid, lig),
+                printIf(args.verbose, "\n[{}]-->new maxScore {}".format(id, s))
+                printIf(args.verbose, "[{}]{}, ".format(id, lig),
                         end='', flush=True) 
             elif s == maxScore:
                 maxScoreLigands.append(lig)
-                printIf(args.verbose, "[{}]{}, ".format(pid, lig),
+                printIf(args.verbose, "[{}]{}, ".format(id, lig),
                     end='', flush=True) 
         
         printIf(args.verbose)  # print final newline

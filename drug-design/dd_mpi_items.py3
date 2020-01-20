@@ -88,13 +88,14 @@ def main():
             comm.send("ligands ready", dest=p)                        #<ready>
 
         activeWorkers = numProcesses - 1   # count of workers that are not done
-        while len(ligands) > 0 and activeWorkers > 0:
+        while len(ligands) > 0 or activeWorkers > 0:
             stat = MPI.Status()
             request = comm.recv(source=MPI.ANY_SOURCE, status=stat)   #<request>
             w = stat.Get_source()
-            if len(ligands) > 0:
+
+            if len(ligands) > 0:  
                 comm.send(ligands.pop(), dest=w)                      
-            else:  # no more ligands to send
+            else:  # no more ligands to send, so receive worker results
                 comm.send("", dest=w)
                 results = comm.recv(source=w)                         #<finish>
                 comm.send("DONE", dest=w)    
@@ -116,7 +117,7 @@ def main():
         maxScoreLigands = []
 
         while True:
-            comm.send("request ligand", source=0)                     #<request>
+            comm.send("request ligand", dest=0)                       #<request>
             lig = comm.recv(source=0)         
             if lig == "":
                 break
@@ -125,12 +126,12 @@ def main():
             if s > maxScore:
                 maxScore = s
                 maxScoreLigands = [lig]
-                printIf(args.verbose, "\n[{}]-->new maxScore {}".format(pid, s))
-                printIf(args.verbose, "[{}]{}, ".format(pid, lig),
+                printIf(args.verbose, "\n[{}]-->new maxScore {}".format(id, s))
+                printIf(args.verbose, "[{}]{}, ".format(id, lig),
                         end='', flush=True) 
             elif s == maxScore:
                 maxScoreLigands.append(lig)
-                printIf(args.verbose, "[{}]{}, ".format(pid, lig),
+                printIf(args.verbose, "[{}]{}, ".format(id, lig),
                     end='', flush=True) 
 
         # no more ligands to score
