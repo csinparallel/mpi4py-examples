@@ -1,3 +1,6 @@
+import random
+import string
+
 # function makeLigand
 #   1 argument:  maximum length of a ligand
 #   return:  a random ligand string of random length between 1 and arg1
@@ -28,4 +31,3 @@ def score(lig, pro):
 def printIf(cond, *positionals, **keywords):
     if cond:
         print(*positionals, **keywords)
-        
