@@ -16,8 +16,13 @@ from dd_functions import *
 # main program
 
 def main():
+    # set up MPI and retrieve basic data
+    comm = MPI.COMM_WORLD
+    id = comm.Get_rank()            #number of the process running the code
+    numProcesses = comm.Get_size()  #total number of processes running
+    myHostName = MPI.Get_processor_name()  #machine name running the code
+
     start = MPI.Wtime() # start timer
-    random.seed(0) # guarantees that each run uses same random number sequence
 
     # parse command-line args...
     parser = argparse.ArgumentParser(
@@ -32,19 +37,13 @@ def main():
                         default=False, help='print verbose output')
     args = parser.parse_args()
 
-    # set up MPI and retrieve basic data
-    comm = MPI.COMM_WORLD
-    id = comm.Get_rank()            #number of the process running the code
-    numProcesses = comm.Get_size()  #total number of processes running
-    myHostName = MPI.Get_processor_name()  #machine name running the code
-
     if numProcesses <= 1:
         print("Need at least two processes, aborting")
         return
 
     # assert - numProcesses > 1
     if id == 0:    # master
-
+        random.seed(0) # guarantees that each run uses same random number sequence
         # generate ligands
         ligands = []
         for l in range(args.nLigands):
