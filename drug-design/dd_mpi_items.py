@@ -3,9 +3,7 @@
 # in this version, workers obtain their own ligands as needed from a work Queue
 # usage on Macalester pi cluster:  python run.py dd_mpi_items.py3 4
 
-import string
 import argparse
-import random
 import math
 from mpi4py import MPI
 
@@ -18,6 +16,7 @@ from dd_functions import *
 # main program
 
 def main():
+    start = MPI.Wtime() # start timer
     random.seed(0) # guarantees that each run uses same random number sequence
 
     # parse command-line args...
@@ -81,6 +80,11 @@ def main():
         print('The maximum score is', maxScore)
         print('Achieved by ligand(s)', maxScoreLigands)
 
+        finish = MPI.Wtime()  # end the timing
+        total_time = finish - start
+        print("Total Running time: {0:12.3f} seconds".format(total_time))
+
+
     else:       # worker
 
         readyMsg = comm.recv(source=0)                                #<ready>
@@ -105,9 +109,14 @@ def main():
                 printIf(args.verbose, "[{}]{}, ".format(id, lig),
                     end='', flush=True)
 
-        # no more ligands to score
         printIf(args.verbose)  # print final newline
+
+        # no more ligands to score
         comm.send([maxScore, maxScoreLigands], dest=0)                #<finish>
         doneMsg = comm.recv(source=0)
+
+        proc_time = MPI.Wtime() - start
+        print("Process {0} Running time: {1:12.3f} seconds".format(id, proc_time))
+
 
 main()

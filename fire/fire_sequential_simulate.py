@@ -58,7 +58,7 @@ def main():
         iters_per_sim_data[(row,1)] = iters_per_sim_data[(row,1)]/num_trials
 
     finish = time.process_time()  # end the timing
-    total_time = finish-start
+    total_time = finish - start
     print("Running time: {0:12.4f} seconds".format(total_time))
 
     # Create a figure with 2 plots of the simulation results
