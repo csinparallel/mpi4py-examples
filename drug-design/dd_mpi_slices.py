@@ -17,7 +17,13 @@ DFLT_protein = "the cat in the hat wore the hat to the cat hat party"
 # main program
 
 def main():
-    start = comm.Wtime()
+    # set up MPI and retrieve basic data
+    comm = MPI.COMM_WORLD
+    id = comm.Get_rank()            #number of the process running the code
+    numProcesses = comm.Get_size()  #total number of processes running
+    myHostName = MPI.Get_processor_name()  #machine name running the code
+
+    start = MPI.Wtime()
 
     # parse command-line args...
     parser = argparse.ArgumentParser(
@@ -31,12 +37,6 @@ def main():
     parser.add_argument('-verbose', action='store_const', const=True,
                         default=False, help='print verbose output')
     args = parser.parse_args()
-
-    # set up MPI and retrieve basic data
-    comm = MPI.COMM_WORLD
-    id = comm.Get_rank()            #number of the process running the code
-    numProcesses = comm.Get_size()  #total number of processes running
-    myHostName = MPI.Get_processor_name()  #machine name running the code
 
     if numProcesses <= 1:
         print("Need at least two processes, aborting")
@@ -73,7 +73,7 @@ def main():
         # print results
         print('The maximum score is', maxScore)
         print('Achieved by ligand(s)', maxScoreLigands)
-        finish = comm.Wtime()
+        finish = MPI.Wtime()
         print('Overall time is', finish - start)
 
     else:       # worker
@@ -98,7 +98,7 @@ def main():
         
         printIf(args.verbose)  # print final newline
         comm.send([maxScore, maxScoreLigands], dest=0)
-        finish = comm.Wtime()
+        finish = MPI.Wtime()
         print('[{}] time is {}'.format(id, finish - start))
 
 main()
