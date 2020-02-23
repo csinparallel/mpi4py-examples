@@ -50,7 +50,7 @@ def main():
         printIf(args.verbose, "master created {} ligands : \n{}".format(len(ligands), ligands), flush=True)
         printIf(args.verbose, "to be scored against protein: {}".format(args.protein), flush=True)
 
-        handOutWork(ligands, comm, numProcesses, args)
+        handOutWork(ligands, comm, numProcesses, args, myHostName)
 
         finish = MPI.Wtime()  # end the timing
         total_time = finish - start
@@ -58,14 +58,14 @@ def main():
         print("Total Running time: {0:12.3f} sec".format(total_time))
 
     else:
-        worker(comm,args)
+        worker(comm, args, myHostName)
 
         finish = MPI.Wtime()  # end the timing
         proc_time = finish - start
         print("Process {0:} running time: {1:12.3f} sec".format(id, proc_time))
 
 
-def handOutWork(ligands, comm, numProcesses, args):
+def handOutWork(ligands, comm, numProcesses, args, myHostName):
     totalWork = len(ligands)
     workcount = 0
     recvcount = 0
@@ -73,7 +73,6 @@ def handOutWork(ligands, comm, numProcesses, args):
     maxScore = -1
     maxScoreLigands = []
 
-    # print("master sending first tasks", flush=True)
     printIf(args.verbose, "master sending first tasks", flush=True)
     # send out the first tasks to all workers
     for id in range(1, numProcesses):
@@ -81,7 +80,7 @@ def handOutWork(ligands, comm, numProcesses, args):
             work=ligands[workcount]
             comm.send(work, dest=id, tag=WORKTAG)
             workcount += 1
-            printIf(args.verbose,"master sent {} to {}".format(work, id), flush=True)
+            printIf(args.verbose,"master on {} sent {} to {}".format(myHostName, work, id), flush=True)
 
     # while there is still work,
     # receive result from a worker, which also
@@ -96,7 +95,7 @@ def handOutWork(ligands, comm, numProcesses, args):
         work=ligands[workcount]
         comm.send(work, dest=workerId, tag=WORKTAG)
         workcount += 1
-        printIf(args.verbose,"master sent {} to {}".format(work, workerId), flush=True)
+        printIf(args.verbose,"master on {} sent {} to {}".format(myHostName, work, workerId), flush=True)
 
         # keep track of maximum
         maxScore, maxScoreLigands = updateMaximum(score, lig, maxScore, maxScoreLigands)
@@ -125,12 +124,12 @@ def handOutWork(ligands, comm, numProcesses, args):
 #
 # Actions of the worker: receive ligand, compute score, and return them
 #
-def worker(comm, args):
+def worker(comm, args, myHostName):
     # keep receiving messages and do work, unless tagged to 'die'
     while(True):
         stat = MPI.Status()
         nextLigand = comm.recv(source=0, tag=MPI.ANY_TAG, status=stat)
-        printIf(args.verbose, "worker {} got {}".format(comm.Get_rank(), nextLigand), flush=True)
+        printIf(args.verbose, "worker {} on {} got {}".format(comm.Get_rank(), myHostName, nextLigand), flush=True)
         # stop if message has special tag
         if (stat.Get_tag() == DIETAG):
             printIf(args.verbose, "worker {} dying".format(comm.Get_rank()), flush=True)

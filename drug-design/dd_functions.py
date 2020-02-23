@@ -28,7 +28,7 @@ def getCommandLineArgs():
     return args
 
 def genRandomLigands(args):
-    random.seed(0)
+    random.seed(1000)
     ligands = []
     for l in range(args.nLigands):
         ligands.append(makeLigand(args.maxLigand))
@@ -39,8 +39,8 @@ def genRandomLigands(args):
 # to args.maxLigand
 def genLigandList(args):
     if (args.nLigands <= 18):
-        ligands = ["razvel", "qudgym", "afrs", "sst", "pgfht", "rt", "id", \
-        "how", "aaddhp",  "df", "os", "hid", \
+        ligands = ["razvex", "qudgy", "afrs", "sst", "pgfht", "rt", "id", \
+        "how", "aaddh",  "df", "os", "hid", \
         "sad", "fl", "rd", "edp", "dfgt", "spa"]
         return ligands[0:args.nLigands]
     else:
@@ -51,7 +51,14 @@ def genLigandList(args):
 #   return:  a random ligand string of random length between 2 and arg1
 
 def makeLigand(maxLength):
-    len = random.randint(2, maxLength)
+#    len = random.randint(2, maxLength)
+#    len = int(random.triangular(2, maxLength+0.7, 4))
+    len = int(random.gammavariate(4.2, 0.8))  # more ligands of length 2, 3
+    if (len < 2):
+        len = 2
+    elif (len > maxLength):
+        len = maxLength
+
     ligand = ""
     for c in range(len):
         ligand = ligand + string.ascii_lowercase[random.randint(0,25)]
