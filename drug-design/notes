@@ -1,0 +1,34 @@
+A possible improvement to the dd_mpi_equal_chunks version would be to have the
+workers send only their highest value back. Master does less work.
+
+master:
+# for count in range(1, numProcesses):
+    #     # receive a result from a worker w
+    #     stat = MPI.Status()
+    #     result = comm.recv(source=MPI.ANY_SOURCE, status=stat)
+    #     w = stat.Get_source()
+    #
+    #     # incorporate that result into maxScore and maxScoreLigands
+    #     if result[0] > maxScore:
+    #         maxScore = result[0]
+    #         maxScoreLigands = result[1]
+    #     elif result[0] == maxScore:
+    #         maxScoreLigands = maxScoreLigands + result[1]
+
+worker:
+# maxScore = -1
+    # maxScoreLigands = []
+    ...
+# if s > maxScore:
+      #     maxScore = s
+      #     maxScoreLigands = [lig]
+      #     printIf(args.verbose, "\n[{}]-->new maxScore {}".format(id, s))
+      #     printIf(args.verbose, "[{}]{}, ".format(id, lig),
+      #             end='', flush=True)
+      # elif s == maxScore:
+      #     maxScoreLigands.append(lig)
+      #     printIf(args.verbose, "[{}]{}, ".format(id, lig),
+      #         end='', flush=True)
+
+  # printIf(args.verbose)  # print final newline
+  # comm.send([maxScore, maxScoreLigands], dest=0)
