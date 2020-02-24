@@ -52,8 +52,9 @@ def genLigandList(args):
 
 def makeLigand(maxLength):
 #    len = random.randint(2, maxLength)
-#    len = int(random.triangular(2, maxLength+0.7, 4))
-    len = int(random.gammavariate(4.2, 0.8))  # more ligands of length 2, 3
+    # So the times do not get too large, create
+    # more ligands of length 2, 3 by using a gamma distribution
+    len = int(random.gammavariate(4.2, 0.8))
     if (len < 2):
         len = 2
     elif (len > maxLength):

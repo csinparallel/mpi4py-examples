@@ -1,0 +1,107 @@
+# Drug design simulation
+
+This is a very rough simulation of a program to compute how well a set of short protein *ligands* (each a possible drug) matches a given longer protein string. In the real software programs that do this, the matching is quite sophisticated, targeting possible 'receptor' sites on the protein.
+
+Here is an image from [Wikipedia](https://en.wikipedia.org/wiki/Protein%E2%80%93ligand_complex) illustrating the concept of the ligand (represented by small sticks in center) binding to areas of the protein (represented by ribbon structure):
+
+![ligand binding to protein receptors](wikipedia_ligand_bind.png)
+
+For the real versions of this code and our simulated case, the longer the ligand or the longer the protein, the longer it takes for the matching and score of the match to complete.
+
+We have created a default fake protein in the code. This can be changed on the command line.
+
+We create the list of possible ligands in 2 ways:
+
+1. If the number of ligands is <= 18, the list of ligands comes from a fabricated list that is hard-codes in the code. We designed this as an example with a range of ligands whose length was from 2 through 6.
+
+2. If the number of ligands is > 18, the ligands are generated randomly using a gamma distribution that looks like this:
+
+![gamma distribution used for creating ligands](./gamma_dist.png)
+
+This means that we will have more ligands of length 2 or 3 and fewer of 4, 5, and 6, which are each declining in number. This has no relation to the real problem, but instead gives us some ligands that can be computed in a reasonable amount of time on a small cluster of single board computers.  This way you can try some experiments and be able to see the advantage of one implementation over the other.
+
+The image of the above Gamma distribution of lengths of ligands came from: [here](https://keisan.casio.com/exec/system/1180573216), where we used a = 4.2 an b = 0.8.
+
+
+## The two message-passing versions
+
+There are two versions of this code, each of which uses the master-worker pattern.
+
+1. `dd_mpi_equal_chunks.py` : The master divides the ligands from the list equally among each worker process, sending all the work at once and waiting for results from each worker.
+
+2. `dd_mpi_dynamic.py` : The master sends ligands one at a time to each worker, giving them new work once they have completed another one.
+
+Please study the code to see how each one works.
+
+## Possible Experiments
+
+The python code is designed to be used with mpi4py. You will need this installed on your own machine or on a cluster of machines.
+
+What you can try will depend on the speed of your system. A simple place to start is with our fixed set of 18 ligands.
+
+1. mpirun -np 4 python dd_mpi_equal_chunks.py 18 --verbose
+
+2. mpirun -np 4 python dd_mpi_dynamic.py 18 --verbose
+
+This is the simple way to run mpirun. You will most likely want to run it differently on a cluster:
+
+1. mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 18 --verbose
+
+2. mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 18 --verbose
+
+This will vary between openMPI and MPICH versions of MPI. What is shown is for openMPI.
+
+From here you should be able to trace how the two programs are working.
+
+You can get all the options like this:
+
+1. python dd_mpi_equal_chunks.py --help
+2. python ./dd_mpi_dynamic.py --help
+
+
+To observe scalability, you can try either program with a fixed number of ligands, varying the number of processes like this: 2 (1 worker), 3 (2 workers), 5 (4 workers), 9 (8 workers).
+
+
+## Improvement to try
+
+If you wish to experiment further, a possible improvement to the each version of the code, but in particular the equal chunks version, would be to have the workers send only their highest values back. This way the master does less work. In the dynamic version, a differently tagged message would be needed to indicate a request for more work from the worker, so this may not really save any time, because the number of messages would be the same.
+
+To do this, the worker might only send the highest scoring ones back:
+
+```
+  maxScore = -1
+  maxScoreLigands = []
+
+    ...    # compute the score
+
+  if s > maxScore:
+            maxScore = s
+            maxScoreLigands = [lig]
+            printIf(args.verbose, "\n[{}]-->new maxScore {}".format(id, s))
+            printIf(args.verbose, "[{}]{}, ".format(id, lig),
+                    end='', flush=True)
+        elif s == maxScore:
+            maxScoreLigands.append(lig)
+            printIf(args.verbose, "[{}]{}, ".format(id, lig),
+                end='', flush=True)
+
+    printIf(args.verbose)    print final newline
+    comm.send([maxScore, maxScoreLigands], dest=0)
+```
+
+The master would receive the highest scoring ones only from each worker:
+
+```
+  for count in range(1, numProcesses):
+          #  receive a high scoring result from a worker w
+          stat = MPI.Status()
+          result = comm.recv(source=MPI.ANY_SOURCE, status=stat)
+          w = stat.Get_source()
+
+          #  incorporate that result into maxScore and maxScoreLigands
+          if result[0] > maxScore:
+              maxScore = result[0]
+              maxScoreLigands = result[1]
+          elif result[0] == maxScore:
+              maxScoreLigands = maxScoreLigands + result[1]
+```

@@ -10,6 +10,8 @@
 #  request another. This dynamic assignmnet means that if one ligand takes
 #  a worker a long time to compute, another worker can complete
 #  additional ones that might take less time.
+#  In this version, the master is keeping track of the overall
+#  maximum scoring ligands.
 #
 #  To run a small example:
 #        mpirun -np 4 python ./dd_mpi_dynamic.py 18 -verbose

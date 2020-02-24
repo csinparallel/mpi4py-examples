@@ -6,6 +6,8 @@
 #  a given protein and scored based on simple matching of letters.
 #  Each worker gets assigned an equal number of ligands from the list and
 #  computes a score for each one, sending it back to the master.
+#  In this version, the master is keeping track of the overall
+#  maximum scoring ligands.
 #
 #  To run a small example:
 #        mpirun -np 4 python ./dd_mpi_equal_chunks.py 18 -verbose
