@@ -1,6 +1,6 @@
 # Forest Fire Simulation Example
 
-Ported to python from the original [Shodor foundation C code example](https://www.shodor.org/refdesk/Resources/Tutorials/BasicMPI/) by Libby Shoop (Macalester College).
+Ported to python by Libby Shoop (Macalester College), from the original [Shodor foundation C code example](https://www.shodor.org/refdesk/Resources/Tutorials/BasicMPI/) .
 
 According to the above Shodor page:
 
