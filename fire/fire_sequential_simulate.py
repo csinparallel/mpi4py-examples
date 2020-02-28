@@ -22,7 +22,7 @@ def main():
     row_size, prob_spread_increment, num_trials = parseArguments()
 
     # determine how many probabilities between .1 up to but not including 1.0
-    # will be tried, based on increment given on cammand line.
+    # will be tried, based on increment given on command line.
     tot_prob_trials = int(math.ceil((1.0 - 0.1)/prob_spread_increment))
     # Note: num_trials simulations will be run, where an iteration
     #       will be for tot_prob_trials.

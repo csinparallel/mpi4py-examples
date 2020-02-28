@@ -25,25 +25,31 @@ The image of the above Gamma distribution of lengths of ligands came from: [here
 
 ## The two message-passing versions
 
-There are two versions of this code, each of which uses the master-worker pattern.
+Each of these versions uses these patterns from the mpi4py patternlets:
 
-1. `dd_mpi_equal_chunks.py` : The master divides the ligands from the list equally among each worker process, sending all the work at once and waiting for results from each worker.
+- SPMD, Single program, multiple data
+- master-worker
+- message passing
 
-2. `dd_mpi_dynamic.py` : The master sends ligands one at a time to each worker, giving them new work once they have completed another one.
+The difference between the versions is as follows:
+
+1. `dd_mpi_equal_chunks.py` : The master divides the ligands from the list equally among each worker process, sending all the work at once and waiting for results from each worker. This uses the *parallel loop equal chunks* pattern.
+
+2. `dd_mpi_dynamic.py` : The master sends ligands one at a time to each worker, giving them new work once they have completed another one. This uses the *dynamic load balance* pattern.
 
 Please study the code to see how each one works.
 
-## Possible Experiments
+## Running Experiments
 
 The python code is designed to be used with mpi4py. You will need this installed on your own machine or on a cluster of machines.
 
 What you can try will depend on the speed of your system. A simple place to start is with our fixed set of 18 ligands.
 
-1. mpirun -np 4 python dd_mpi_equal_chunks.py 18 --verbose
+## Cluster of machines method
 
-2. mpirun -np 4 python dd_mpi_dynamic.py 18 --verbose
+**DO** use this method on a Raspberry Pi cluster.
 
-This is the simple way to run mpirun. You will most likely want to run it differently on a cluster:
+You will want to run each version on a cluster like this:
 
 1. mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 18 --verbose
 
@@ -58,8 +64,82 @@ You can get all the options like this:
 1. python dd_mpi_equal_chunks.py --help
 2. python ./dd_mpi_dynamic.py --help
 
+## Experiments to run: observe differences and performance improvement
 
-To observe scalability, you can try either program with a fixed number of ligands, varying the number of processes like this: 2 (1 worker), 3 (2 workers), 5 (4 workers), 9 (8 workers).
+### Difference between equal loads and dynamic loads
+
+The first point to notice about this example is that the work of each worker varies, so the time to compute a score for a ligand varies. This means we can experiment to see how assigning equal amounts of ligands per worker compares to dynamically assigning each ligand to the next worker that has finished.
+
+Run each of the following cases as you did above, but changing the number of ligands. Start like this, where the 12 is for 12 ligands:
+
+```
+mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 12 --verbose
+```
+
+```
+mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 12 --verbose
+```
+
+
+
+Fill in the following table, where you run these again, changing the 12 to 18, then 24, then 30.
+
+| -np | #ligands | equal chunks time | dynamic time |
+|-----|----------|-------------------|--------------|
+| 4   | 12       |                   |              |
+| 4   | 18       |                   |              |
+| 4   | 24       |                   |              |
+| 4   | 30       |                   |              |
+
+
+What do you observe about the difference between the two versions?
+
+It is important to realize that these results might not always follow this pattern, depending on the number of ligands you try. It can happen that over a larger amount of overall work, the 'equal chunks' version works just as well as the dynamic version. (With more work, on average, the equal versions work out; with a really small amount of work per process this can also happen.)
+
+### Observing Scalability
+
+Scalability is an important measure of parallel programs. To observe scalability, you can try either program with a fixed number of ligands, varying the number of processes like this: 2 (1 worker), 3 (2 workers), 5 (4 workers), 9 (8 workers).
+
+| -np | #ligands | # workers | equal chunks time | dynamic time |
+|-----|----------|-----------|-------------------|--------------|
+| 2   | 21       |     1     |                   |              |
+| 3   | 21       |     2     |                   |              |
+| 5   | 21       |     4     |                   |              |
+| 9   | 21       |     8     |                   |              |
+
+What do you observe about the time as you double the number of workers?
+
+Ideally, as you double the number of workers, the time should be cut in half. This is called **strong scalability**. But there is some overhead from the message passing, so we don't see perfect strong scalability.
+
+Can you explain the difference between each version, especially as the number of workers increases?
+
+You could also try a smaller number of ligands and observe when it is no longer beneficial to use any more workers in either of these cases. Try filling in this table:
+
+| -np | #ligands | # workers | equal chunks time | dynamic time |
+|-----|----------|-----------|-------------------|--------------|
+| 2   | 18       |     1     |                   |              |
+| 3   | 18       |     2     |                   |              |
+| 5   | 18       |     4     |                   |              |
+| 9   | 18       |     8     |                   |              |
+| 17  | 18       |     16    |                   |              |
+
+What observations can you make now?
+
+# Other information
+
+What follows is some additional information and a possible improvement to the code that you could explore.
+
+## Simple single machine method
+
+Do **NOT** use this on a Raspberry Pi cluster!!
+
+When trying things out on a laptop, you can run the code this way:
+
+1. mpirun -np 4 python dd_mpi_equal_chunks.py 18 --verbose
+
+2. mpirun -np 4 python dd_mpi_dynamic.py 18 --verbose
+
+This is the simple way to run mpirun.
 
 
 ## Improvement to try
