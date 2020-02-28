@@ -1,4 +1,4 @@
-# mpi4py examples
+# mpi4py Examples
 
 Code examples that illustrate the use of message passing in python using the mpiy4pi library.
 
