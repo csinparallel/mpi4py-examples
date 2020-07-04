@@ -4,8 +4,6 @@ Code examples that illustrate the use of message passing in python using the mpi
 
 _Revised for `virtual20.cs.stolaf.edu` accounts, as part of CSinParallel Virtual20 Workshop, July 2020_
 
-**Note:  We will write `v20-`_n_ to represent your user account on `virtual20.cs.stolaf.edu`, for example, `v20-1`**
-
 ## Forest fire simulation
 
 From your home directory on `virtual20.cs.stolaf.edu`, you can get to this example like this:
