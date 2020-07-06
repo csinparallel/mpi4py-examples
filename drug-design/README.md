@@ -73,11 +73,11 @@ The first point to notice about this example is that the work of each worker var
 Run each of the following cases as you did above, but changing the number of ligands. Start like this, where the 12 is for 12 ligands:
 
 ```
-mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 12 --verbose
+mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 12 
 ```
 
 ```
-mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 12 --verbose
+mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 12 
 ```
 
 
