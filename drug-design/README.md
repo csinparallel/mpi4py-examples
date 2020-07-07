@@ -41,23 +41,21 @@ Please study the code to see how each one works.
 
 ## Running Experiments
 
-The python code is designed to be used with mpi4py. You will need this installed on your own machine or on a cluster of machines.
+The python code is designed to be used with mpi4py. You will need this installed on your own machine, a server, or on a cluster of machines.
 
 What you can try will depend on the speed of your system. A simple place to start is with our fixed set of 18 ligands.
 
-## Cluster of machines method
+## Multicore server method
 
-**DO** use this method on a Raspberry Pi cluster.
+**DO** use this method on a server with multiple cores.
 
-You will want to run each version on a cluster like this:
+You will want to run each version on the virtual20 server like this:
 
-1. mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 18 --verbose
+1. mpirun -np 4 python dd_mpi_equal_chunks.py 18 --verbose
 
-2. mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 18 --verbose
+2. mpirun -np 4 python dd_mpi_dynamic.py 18 --verbose
 
-This will vary between openMPI and MPICH versions of MPI. What is shown is for openMPI.
-
-From here you should be able to trace how the two programs are working.
+From here you should be able to trace how the two programs are working. Be sure to take a bit of time to read through the output and match it to the code file for each one.
 
 You can get all the options like this:
 
@@ -70,14 +68,14 @@ You can get all the options like this:
 
 The first point to notice about this example is that the work of each worker varies, so the time to compute a score for a ligand varies. This means we can experiment to see how assigning equal amounts of ligands per worker compares to dynamically assigning each ligand to the next worker that has finished.
 
-Run each of the following cases as you did above, but changing the number of ligands. Start like this, where the 12 is for 12 ligands:
+Run each of the following cases as you did above, but changing the number of ligands. Start like this, where the 12 is for 12 ligands, and we remove the verbose output:
 
 ```
-mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_equal_chunks.py 12 --verbose
+mpirun -np 4 python dd_mpi_equal_chunks.py 12 
 ```
 
 ```
-mpirun -np 4 -hostfile cluster_nodes --map-by node python dd_mpi_dynamic.py 12 --verbose
+mpirun -np 4 dd_mpi_dynamic.py 12 
 ```
 
 
@@ -87,9 +85,9 @@ Fill in the following table, where you run these again, changing the 12 to 18, t
 | -np | #ligands | equal chunks time | dynamic time |
 |-----|----------|-------------------|--------------|
 | 4   | 12       |                   |              |
-| 4   | 18       |                   |              |
 | 4   | 24       |                   |              |
-| 4   | 30       |                   |              |
+| 4   | 36       |                   |              |
+| 4   | 48       |                   |              |
 
 
 What do you observe about the difference between the two versions?
@@ -102,10 +100,10 @@ Scalability is an important measure of parallel programs. To observe scalability
 
 | -np | #ligands | # workers | equal chunks time | dynamic time |
 |-----|----------|-----------|-------------------|--------------|
-| 2   | 21       |     1     |                   |              |
-| 3   | 21       |     2     |                   |              |
-| 5   | 21       |     4     |                   |              |
-| 9   | 21       |     8     |                   |              |
+| 3   | 48       |     2     |                   |              |
+| 5   | 48       |     4     |                   |              |
+| 9   | 48       |     8     |                   |              |
+| 17  | 48       |    16     |                   |              |
 
 What do you observe about the time as you double the number of workers?
 
@@ -117,7 +115,6 @@ You could also try a smaller number of ligands and observe when it is no longer 
 
 | -np | #ligands | # workers | equal chunks time | dynamic time |
 |-----|----------|-----------|-------------------|--------------|
-| 2   | 18       |     1     |                   |              |
 | 3   | 18       |     2     |                   |              |
 | 5   | 18       |     4     |                   |              |
 | 9   | 18       |     8     |                   |              |
@@ -125,21 +122,6 @@ You could also try a smaller number of ligands and observe when it is no longer 
 
 What observations can you make now?
 
-# Other information
-
-What follows is some additional information and a possible improvement to the code that you could explore.
-
-## Simple single machine method
-
-Do **NOT** use this on a Raspberry Pi cluster!!
-
-When trying things out on a laptop, you can run the code this way:
-
-1. mpirun -np 4 python dd_mpi_equal_chunks.py 18 --verbose
-
-2. mpirun -np 4 python dd_mpi_dynamic.py 18 --verbose
-
-This is the simple way to run mpirun.
 
 
 ## Improvement to try

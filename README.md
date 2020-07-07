@@ -4,6 +4,10 @@ Code examples that illustrate the use of message passing in python using the mpi
 
 _Revised for `virtual20.cs.stolaf.edu` accounts, as part of CSinParallel Virtual20 Workshop, July 2020_
 
+## Prerequisite: get connected over VNC
+
+There are separate instructions for your login credentials and setting up the Google Chrome VNC application so that you can have a virtual desktop on the server called `virtual20.cs.stolaf.edu`.
+
 ## Forest fire simulation
 
 From your home directory on `virtual20.cs.stolaf.edu`, you can get to this example like this:
@@ -28,7 +32,7 @@ The folder called `fire` has a simple simulation of the spread of a wildfire in 
 
 ## Drug design simulation
 
-From any directory on the head node of the cluster, you can do this:
+From any directory on `virtual20.cs.stolaf.edu`, you can do this:
 
 ```sh
 cd  ~/CSinParallel/mpi4py-examples/drug-design
